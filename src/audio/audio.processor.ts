@@ -4,38 +4,44 @@ import { Job, Queue } from 'bull';
 
 @Processor('audio')
 export class AudioProcessor {
+
   private readonly logger = new Logger(AudioProcessor.name);
 
-  constructor(@InjectQueue('video') private readonly videoQueue: Queue){}
+  constructor(@InjectQueue('video') private readonly videoQueue: Queue) { }
 
   @Process()
-  handleTranscode(job: Job) {
+  async handleTranscode(job: Job) {
+    await new Promise(r => setTimeout(r, 300))
   }
 
   @OnQueueActive()
-    async onActive(job: Job<any>) {
-        this.logger.debug("started " + job.data.file);
-    }
+  onActive(job: Job<any>) {
+    this.logger.debug("started " + job.data.file + "  " + Date.now());
+  }
 
-    @OnQueueWaiting()
-    onwaiting(job: Job<any>) {
-        if (!this.videoQueue.isPaused)
-        {
-            console.log(`Paused video Queue`)
-            this.videoQueue.pause()
-        }
-    }
+  @OnQueueWaiting()
+  async onwaiting(job: Job<any>) {
+    let boolPaused = await this.videoQueue.isPaused()
 
-    @OnQueueCompleted()
-    onCompleted(job: Job<any>) {
-        this.logger.debug("ended " + job.data.file);
+    if (!boolPaused) {
+      console.log("Pause video Queue" + "  " + Date.now())
+      this.videoQueue.pause()
     }
+  }
 
-    @OnQueueDrained()
-    onDrained() {
-        if (this.videoQueue.isPaused)
-            this.videoQueue.resume()
+  @OnQueueCompleted()
+  onCompleted(job: Job<any>) {
+    this.logger.debug("ended " + job.data.file + "  " + Date.now());
+  }
+
+  @OnQueueDrained()
+  async onDrained() {
+    let boolPaused = await this.videoQueue.isPaused()
+
+    if (boolPaused) {
+      this.videoQueue.resume()
     }
+  }
 
 }
 
@@ -43,29 +49,33 @@ export class AudioProcessor {
 export class VideoProcessor {
   private readonly logger = new Logger(VideoProcessor.name);
 
+
+
   @Process()
-  handleTranscode(job: Job) {
+  async handleTranscode(job: Job) {
+
+    await new Promise(r => setTimeout(r, 300))
   }
 
   @OnQueueActive()
   onActive(job: Job<any>) {
-    this.logger.debug("started " + job.data.file);
+    this.logger.debug("started " + job.data.file + "  " + Date.now());
   }
 
   @OnQueueCompleted()
   onCompleted(job: Job<any>) {
-    this.logger.debug("ended " + job.data.file);
+    this.logger.debug("ended " + job.data.file + "  " + Date.now());
   }
 
   @OnQueueResumed()
   onResumed() {
-      console.log(`Resumed video Queue`)
-      // queue is resumed now
+    console.log(`Resumed video Queue` + "  " + Date.now())
+    // queue is resumed now
   }
 
   @OnQueuePaused()
   onPaused() {
-      console.log(`Paused video Queue`)
-      // queue is paused now
+    console.log(`Paused video Queue` + "  " + Date.now())
+    // queue is paused now
   }
 }

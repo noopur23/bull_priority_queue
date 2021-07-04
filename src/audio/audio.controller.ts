@@ -16,16 +16,16 @@ export class AudioController {
             await this.audioQueue.add({
                 file: i,
             });
-            await new Promise(r => setTimeout(r, 2500))
+            await new Promise(r => setTimeout(r, 100))
         }
     }
     @Post('video')
     async postVideo() {
-        for (let j = 0; j < 50; j++) {
+        for (let j = 0; j < 30; j++) {
             await this.videoQueue.add({
                 file: j,
             });
-            await new Promise(r => setTimeout(r, 1000))
+            await new Promise(r => setTimeout(r, 100))
         }
     }
 }
